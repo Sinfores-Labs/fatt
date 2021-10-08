@@ -440,7 +440,7 @@ export default {
         </div>
       </div>
       <div class="h-10 bg-gray-50 border-t flex justify-between items-center text-xs px-4">
-        <div class="font-semibold">Sinfores FSTEK Navigator</div>
+        <div class="font-semibold">Sinfores SXI FATT Navigator</div>
         <div class="flex items-center space-x-2">
           <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="isActionsDialogVisible = true">Actions</div>
           <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="openModal">Load</div>
