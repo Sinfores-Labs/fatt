@@ -15,134 +15,6 @@ import { CheckIcon, SelectorIcon, XIcon } from '@heroicons/vue/solid'
 import { useDropzone } from 'vue3-dropzone'
 import { saveAs } from 'file-saver'
 
-const _matrix = {
-  version: 1,
-  tactics: [
-    {
-      id: "T01",
-      short_name: "Tactic 1",
-      techniques: [
-        "T01.01",
-        "T01.02",
-        "T01.03",
-        "T01.04"
-      ]
-    },
-    {
-      id: "T02",
-      short_name: "Tactic 2",
-      techniques: [
-        "T02.01",
-        "T02.02",
-        "T02.03",
-        "T02.04"
-      ]
-    },
-    {
-      id: "T03",
-      short_name: "Tactic 3",
-      techniques: [
-        "T03.01",
-        "T03.02",
-        "T03.03",
-        "T03.04"
-      ]
-    },
-    {
-      id: "T04",
-      short_name: "Tactic 4",
-      techniques: [
-        "T04.01",
-        "T04.02",
-        "T04.03",
-        "T04.04"
-      ]
-    }
-  ],
-  techniques: [
-    {
-      id: "T01.01",
-      short_name: "Tech 01.01",
-      color: "bg-white"
-    },
-    {
-      id: "T01.02",
-      short_name: "Tech 01.02",
-      color: "bg-white"
-    },
-    {
-      id: "T01.03",
-      short_name: "Tech 01.03",
-      color: "bg-white"
-    },
-    {
-      id: "T01.04",
-      short_name: "Tech 01.04",
-      color: "bg-white"
-    },
-    {
-      id: "T02.01",
-      short_name: "Tech 02.01",
-      color: "bg-white"
-    },
-    {
-      id: "T02.02",
-      short_name: "Tech 02.02",
-      color: "bg-white"
-    },
-    {
-      id: "T02.03",
-      short_name: "Tech 02.03",
-      color: "bg-white"
-    },
-    {
-      id: "T02.04",
-      short_name: "Tech 02.04",
-      color: "bg-white"
-    },
-    {
-      id: "T03.01",
-      short_name: "Tech 03.01",
-      color: "bg-white"
-    },
-    {
-      id: "T03.02",
-      short_name: "Tech 03.02",
-      color: "bg-white"
-    },
-    {
-      id: "T03.03",
-      short_name: "Tech 03.03",
-      color: "bg-white"
-    },
-    {
-      id: "T03.04",
-      short_name: "Tech 03.04",
-      color: "bg-white"
-    },
-    {
-      id: "T04.01",
-      short_name: "Tech 04.01",
-      color: "bg-white"
-    },
-    {
-      id: "T04.02",
-      short_name: "Tech 04.02",
-      color: "bg-white"
-    },
-    {
-      id: "T04.03",
-      short_name: "Tech 04.03",
-      color: "bg-white"
-    },
-    {
-      id: "T04.04",
-      short_name: "Tech 04.04",
-      color: "bg-white"
-    }
-  ]
-}
-
 const colors = [
   {
     label: "White",
@@ -174,6 +46,17 @@ const colors = [
   }
 ]
 
+const applicabilityChoices = [
+  {
+    label: 'Применимо',
+    value: 1
+  },
+  {
+    label: 'Не применимо',
+    value: 0
+  }
+]
+
 export default {
   components: {
     TransitionRoot,
@@ -191,9 +74,16 @@ export default {
   },
 
   setup() {
-    const matrix = ref(_matrix)
+    const matrix = ref()
     const activeTechiqueId = ref(null)
     
+    const activeTechniqueApplicability = ref(1)
+    watch (activeTechniqueApplicability, (applicable, prevApplicable) => {
+      if (activeTechiqueId.value) {
+        matrix.value.techniques.find(el => el.id === activeTechiqueId.value).applicable = applicable
+      }
+    })
+
     const activeTechniqueColor = ref("bg-white")
     watch (activeTechniqueColor, (color, prevColor) => {
       if (activeTechiqueId.value) {
@@ -229,8 +119,7 @@ export default {
     let sourceJSONFile;
     const onDrop = (acceptFiles, rejectReasons) => {
       sourceJSONFile = acceptFiles[0]
-      console.log(acceptFiles)
-      console.log(rejectReasons)
+      loadJSON()
     }
     const { getRootProps, getInputProps, ...rest } = useDropzone({ onDrop })
     const loadJSON = () => {
@@ -254,6 +143,8 @@ export default {
       isTechniqueDialogVisible,
       activeTechniqueColor,
       colors,
+      applicabilityChoices,
+      activeTechniqueApplicability,
       isOpen,
       closeModal,
       openModal,
@@ -271,7 +162,7 @@ export default {
   <div>
     <!-- Actions -->
     <div class="absolute h-10 right-2 top-1 text-sm">
-      <div class="flex items-center">
+      <div class="flex items-center px-4 bg-white bg-opacity-90 rounded-md">
         <div class="py-1 px-2 rounded hover:bg-gray-100 cursor-pointer" type="button" @click="openModal">Load</div>
         <div class="py-1 px-2 rounded hover:bg-gray-100 cursor-pointer" type="button" @click="saveJSON()">Save</div>
       </div>
@@ -343,6 +234,7 @@ export default {
         </div>
       </Dialog>
     </TransitionRoot>
+
     <!-- Technique editor -->
     <div v-if="isTechniqueDialogVisible" class="absolute bg-gray-50 w-96 border-l inset-y-0 right-0 shadow-lg overflow-auto">
       <div class="h-16 w-full bg-gray-100 flex justify-between items-center pr-1 pl-4">
@@ -360,9 +252,58 @@ export default {
         </div>
       </div>
       <div v-if="activeTechiqueId" class="p-4">
-        <div>{{ activeTechiqueId }}</div>
+        <div class="my-2 font-bold text-lg">{{ activeTechiqueId }}</div>
 
-        <!-- Color chooser -->
+        <!-- Applicability chooser -->
+        <!-- ---------------------------------------------- -->
+        <Listbox v-model="activeTechniqueApplicability">
+          <div class="relative mt-1">
+            <ListboxButton class="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-white focus-visible:ring-offset-orange-300 focus-visible:ring-offset-2 focus-visible:border-indigo-500 sm:text-sm">
+              <span class="block truncate">{{ applicabilityChoices.find(el => el.value === activeTechniqueApplicability).label }}</span>
+              <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <SelectorIcon class="w-5 h-5 text-gray-400" aria-hidden="true" />
+              </span>
+            </ListboxButton>
+            <transition
+              leave-active-class="transition duration-100 ease-in"
+              leave-from-class="opacity-100"
+              leave-to-class="opacity-0"
+            >
+              <ListboxOptions class="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                <ListboxOption
+                  v-slot="{ active, selected }"
+                  v-for="a in applicabilityChoices"
+                  :key="a.value"
+                  :value="a.value"
+                  as="template"
+                >
+                  <li
+                    :class="[
+                      active ? 'text-amber-900 bg-amber-100' : 'text-gray-900',
+                      'cursor-default select-none relative py-2 pl-10 pr-4'
+                    ]"
+                  >
+                    <span
+                      :class="[
+                        selected ? 'font-medium' : 'font-normal',
+                        'block truncate',
+                      ]"
+                      >{{ a.label }}</span
+                    >
+                    <span
+                      v-if="selected"
+                      class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600"
+                    >
+                      <CheckIcon class="w-5 h-5" aria-hidden="true" />
+                    </span>
+                  </li>
+                </ListboxOption>
+              </ListboxOptions>
+            </transition>
+          </div>
+        </Listbox>
+
+                <!-- Color chooser -->
         <!-- ---------------------------------------------- -->
         <Listbox v-model="activeTechniqueColor">
           <div class="relative mt-1">
@@ -483,18 +424,18 @@ export default {
     </div>
     
     <!-- Matrix -->
-    <div class="flex space-x-1 text-xs p-4 pb-32 w-screen h-screen overflow-auto">
+    <div v-if="matrix" class="flex space-x-1 text-xs p-4 pb-32 w-screen h-screen overflow-auto">
       <div v-for="tactic in matrix.tactics" :key="tactic.id" class="w-40">
         <div>
-          <header class="h-16 border-b">
+          <header class="h-16">
             <div class="font-bold">{{ tactic.id }}</div>
             <div class="pr-8">{{ tactic.short_name }}</div>
           </header>
           <div class="space-y-1 mt-1">
             <div v-for="tech in matrix.techniques" :key="tech.id">
-              <div v-if="tactic.techniques.includes(tech.id)" class="border p-2 cursor-pointer hover:bg-gray-100 h-10" :class="[tech.color, tech.id === activeTechiqueId ? 'border-gray-900' : '']" @click="setActiveTechique(tech.id)">
+              <div v-if="tactic.techniques.includes(tech.id)" class="border p-2 cursor-pointer hover:bg-gray-100 h-8" :class="[tech.color, tech.id === activeTechiqueId ? 'border-gray-900' : '', parseInt(tech.applicable) === 0 ? 'opacity-10' : '']" @click="setActiveTechique(tech.id)">
                 <div class="flex justify-between">
-                  <div>{{ tech.id }}</div>
+                  <div class="">{{ tech.id }}</div>
                   <div class="flex items-center space-x-1">
                     <div v-if="parseInt(tech.intruder) !== 0">H{{ tech.intruder }}</div>
                     <div v-if="parseInt(tech.protect) !== 0">P{{ tech.protect }}</div>
@@ -504,6 +445,24 @@ export default {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="flex items-center justify-center w-screen h-screen">
+      <div class="flex space-x-8">
+        <div class="w-72 border rounded-lg p-8">
+          <div class="font-bold text-lg">Load your matrix</div>
+          <div class="h-32 bg-gray-100 border rounded-lg my-4 p-8 flex items-center justify-center text-xs">
+            <div v-bind="getRootProps()">
+              <input v-bind="getInputProps()" >
+              <p v-if="isDragActive">Drop the files here ...</p>
+              <p v-else class="cursor-pointer">Drag 'n' drop some files here, or click to select files</p>
+            </div>
+          </div>
+        </div>
+        <div class="w-72 border rounded-lg p-8">
+          <div class="font-bold text-lg">Use template...</div>
         </div>
       </div>
     </div>
