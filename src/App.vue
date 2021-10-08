@@ -63,6 +63,7 @@ export default {
   },
 
   setup() {
+    const isActionsDialogVisible = ref(false)
     const matrix = ref()
     const activeTechiqueId = ref(null)
     
@@ -126,6 +127,7 @@ export default {
     }
     
     return {
+      isActionsDialogVisible,
       matrix,
       activeTechiqueId,
       activeTechique,
@@ -150,13 +152,7 @@ export default {
 
 <template>
   <div>
-    <!-- Actions -->
-    <div class="absolute h-10 right-2 top-1 text-sm">
-      <div class="flex items-center px-4 bg-white bg-opacity-90 rounded-md">
-        <div class="py-1 px-2 rounded hover:bg-gray-100 cursor-pointer" type="button" @click="openModal">Load</div>
-        <div class="py-1 px-2 rounded hover:bg-gray-100 cursor-pointer" type="button" @click="saveJSON()">Save</div>
-      </div>
-    </div>
+    <!-- Load dialog -->
     <TransitionRoot appear :show="isOpen" as="template">
       <Dialog as="div" @close="closeModal">
         <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -225,8 +221,18 @@ export default {
       </Dialog>
     </TransitionRoot>
 
+    <!-- Actions flyover -->
+    <div v-if="isActionsDialogVisible" class="absolute bottom-10 right-4 h-96 w-96 border bg-white flex flex-col z-10">
+      <div class="h-10 bg-gray-100 flex items-center justify-end px-1">
+        <div @click="isActionsDialogVisible = false" class="flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-200 cursor-pointer">
+          <XIcon class="w-5 h-5" aria-hidden="true" />
+        </div>
+      </div>
+      <div class="flex-1 overflow-auto">Actions</div>
+    </div>
+
     <!-- Technique editor -->
-    <div v-if="isTechniqueDialogVisible" class="absolute bg-gray-50 w-96 border-l inset-y-0 right-0 shadow-lg overflow-auto">
+    <div v-if="isTechniqueDialogVisible" class="absolute bg-gray-50 w-96 border-l inset-y-0 right-0 shadow-lg overflow-auto z-10 opacity-100">
       <div class="h-16 w-full bg-gray-100 flex justify-between items-center pr-1 pl-4">
         <div>
           <button
@@ -387,46 +393,58 @@ export default {
       </div>
     </div>
     
-    <!-- Matrix -->
-    <div v-if="matrix" class="flex space-x-1 text-xs p-4 pb-32 w-screen h-screen overflow-auto">
-      <div v-for="tactic in matrix.tactics" :key="tactic.id" class="w-40">
-        <div>
-          <header class="h-16">
-            <div class="font-bold">{{ tactic.id }}</div>
-            <div class="pr-8">{{ tactic.short_name }}</div>
-          </header>
-          <div class="space-y-1 mt-1">
-            <div v-for="tech in matrix.techniques" :key="tech.id">
-              <div v-if="tactic.techniques.includes(tech.id)" class="border p-2 cursor-pointer hover:bg-gray-100 h-8" :class="[tech.color, tech.id === activeTechiqueId ? 'border-gray-900' : '', tech.applicable ? '' : 'opacity-10']" @click="setActiveTechique(tech.id)">
-                <div class="flex justify-between">
-                  <div class="">{{ tech.id }}</div>
-                  <div class="flex items-center space-x-1">
-                    <div v-if="parseInt(tech.intruder) !== 0">H{{ tech.intruder }}</div>
-                    <div v-if="parseInt(tech.protect) !== 0">P{{ tech.protect }}</div>
-                    <div v-if="parseInt(tech.detect) !== 0">D{{ tech.detect }}</div>
+    <div class="flex flex-col w-screen h-screen">
+      <div class="flex-1 overflow-auto p-4 pb-20">
+        <!-- Matrix -->
+        <div v-if="matrix" class="flex space-x-1 text-xs">
+          <div v-for="tactic in matrix.tactics" :key="tactic.id" class="w-40">
+            <div>
+              <header class="h-16">
+                <div class="font-bold">{{ tactic.id }}</div>
+                <div class="pr-8">{{ tactic.short_name }}</div>
+              </header>
+              <div class="space-y-1 mt-1">
+                <div v-for="tech in matrix.techniques" :key="tech.id">
+                  <div v-if="tactic.techniques.includes(tech.id)" class="border p-2 cursor-pointer hover:bg-gray-100 h-8" :class="[tech.color, tech.id === activeTechiqueId ? 'border-gray-900' : '', tech.applicable ? '' : 'opacity-10']" @click="setActiveTechique(tech.id)">
+                    <div class="flex justify-between">
+                      <div class="">{{ tech.id }}</div>
+                      <div class="flex items-center space-x-1">
+                        <div v-if="parseInt(tech.intruder) !== 0">H{{ tech.intruder }}</div>
+                        <div v-if="parseInt(tech.protect) !== 0">P{{ tech.protect }}</div>
+                        <div v-if="parseInt(tech.detect) !== 0">D{{ tech.detect }}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div v-else class="flex items-center justify-center w-screen h-screen">
-      <div class="flex space-x-8">
-        <div class="w-72 border rounded-lg p-8">
-          <div class="font-bold text-lg">Load your matrix</div>
-          <div class="h-32 bg-gray-100 border rounded-lg my-4 p-8 flex items-center justify-center text-xs">
-            <div v-bind="getRootProps()">
-              <input v-bind="getInputProps()" >
-              <p v-if="isDragActive">Drop the files here ...</p>
-              <p v-else class="cursor-pointer">Drag 'n' drop some files here, or click to select files</p>
+        <div v-else class="flex items-center justify-center h-full">
+          <div class="flex space-x-8">
+            <div class="w-72 border rounded-lg p-8">
+              <div class="font-bold text-lg">Load your matrix</div>
+              <div class="h-32 bg-gray-100 border rounded-lg my-4 p-8 flex items-center justify-center text-xs">
+                <div v-bind="getRootProps()">
+                  <input v-bind="getInputProps()" >
+                  <p v-if="isDragActive">Drop the files here ...</p>
+                  <p v-else class="cursor-pointer">Drag 'n' drop some files here, or click to select files</p>
+                </div>
+              </div>
+            </div>
+            <div class="w-72 border rounded-lg p-8">
+              <div class="font-bold text-lg">Use template...</div>
             </div>
           </div>
         </div>
-        <div class="w-72 border rounded-lg p-8">
-          <div class="font-bold text-lg">Use template...</div>
+      </div>
+      <div class="h-10 bg-gray-50 border-t flex justify-between items-center text-xs px-4">
+        <div class="font-semibold">Sinfores FSTEK Navigator</div>
+        <div class="flex items-center space-x-2">
+          <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="isActionsDialogVisible = true">Actions</div>
+          <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="openModal">Load</div>
+          <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="saveJSON()">Save</div>
         </div>
       </div>
     </div>
