@@ -46,17 +46,6 @@ const colors = [
   }
 ]
 
-const applicabilityChoices = [
-  {
-    label: 'Применимо',
-    value: 1
-  },
-  {
-    label: 'Не применимо',
-    value: 0
-  }
-]
-
 export default {
   components: {
     TransitionRoot,
@@ -77,7 +66,7 @@ export default {
     const matrix = ref()
     const activeTechiqueId = ref(null)
     
-    const activeTechniqueApplicability = ref(1)
+    const activeTechniqueApplicability = ref(true)
     watch (activeTechniqueApplicability, (applicable, prevApplicable) => {
       if (activeTechiqueId.value) {
         matrix.value.techniques.find(el => el.id === activeTechiqueId.value).applicable = applicable
@@ -96,6 +85,8 @@ export default {
       isTechniqueDialogVisible.value = true
       activeTechiqueId.value = id
       activeTechique.value = matrix.value.techniques.find(el => el.id === id)
+      activeTechniqueApplicability.value = activeTechique.value.applicable
+      activeTechniqueColor.value = activeTechique.value.color
     }
 
     const isTechniqueDialogVisible = ref(false)
@@ -143,7 +134,6 @@ export default {
       isTechniqueDialogVisible,
       activeTechniqueColor,
       colors,
-      applicabilityChoices,
       activeTechniqueApplicability,
       isOpen,
       closeModal,
@@ -251,59 +241,33 @@ export default {
           <XIcon class="w-5 h-5" aria-hidden="true" />
         </div>
       </div>
-      <div v-if="activeTechiqueId" class="p-4">
+      <div v-if="activeTechiqueId" class="p-4 relative">
         <div class="my-2 font-bold text-lg">{{ activeTechiqueId }}</div>
 
         <!-- Applicability chooser -->
         <!-- ---------------------------------------------- -->
-        <Listbox v-model="activeTechniqueApplicability">
-          <div class="relative mt-1">
-            <ListboxButton class="relative w-full py-2 pl-3 pr-10 text-left bg-white rounded-lg shadow-md cursor-default focus:outline-none focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-white focus-visible:ring-offset-orange-300 focus-visible:ring-offset-2 focus-visible:border-indigo-500 sm:text-sm">
-              <span class="block truncate">{{ applicabilityChoices.find(el => el.value === activeTechniqueApplicability).label }}</span>
-              <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <SelectorIcon class="w-5 h-5 text-gray-400" aria-hidden="true" />
-              </span>
-            </ListboxButton>
-            <transition
-              leave-active-class="transition duration-100 ease-in"
-              leave-from-class="opacity-100"
-              leave-to-class="opacity-0"
-            >
-              <ListboxOptions class="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                <ListboxOption
-                  v-slot="{ active, selected }"
-                  v-for="a in applicabilityChoices"
-                  :key="a.value"
-                  :value="a.value"
-                  as="template"
-                >
-                  <li
-                    :class="[
-                      active ? 'text-amber-900 bg-amber-100' : 'text-gray-900',
-                      'cursor-default select-none relative py-2 pl-10 pr-4'
-                    ]"
-                  >
-                    <span
-                      :class="[
-                        selected ? 'font-medium' : 'font-normal',
-                        'block truncate',
-                      ]"
-                      >{{ a.label }}</span
-                    >
-                    <span
-                      v-if="selected"
-                      class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600"
-                    >
-                      <CheckIcon class="w-5 h-5" aria-hidden="true" />
-                    </span>
-                  </li>
-                </ListboxOption>
-              </ListboxOptions>
-            </transition>
+        <div class="block">
+          <div class="mt-2">
+            <div>
+              <label class="inline-flex items-center">
+                <input type="checkbox" class="
+                    rounded
+                    border-gray-300
+                    text-indigo-600
+                    shadow-sm
+                    focus:border-indigo-300
+                    focus:ring
+                    focus:ring-offset-0
+                    focus:ring-indigo-200
+                    focus:ring-opacity-50
+                  " v-model="activeTechniqueApplicability">
+                <span class="ml-2">Применимо</span>
+              </label>
+            </div>
           </div>
-        </Listbox>
+        </div>
 
-                <!-- Color chooser -->
+        <!-- Color chooser -->
         <!-- ---------------------------------------------- -->
         <Listbox v-model="activeTechniqueColor">
           <div class="relative mt-1">
@@ -433,7 +397,7 @@ export default {
           </header>
           <div class="space-y-1 mt-1">
             <div v-for="tech in matrix.techniques" :key="tech.id">
-              <div v-if="tactic.techniques.includes(tech.id)" class="border p-2 cursor-pointer hover:bg-gray-100 h-8" :class="[tech.color, tech.id === activeTechiqueId ? 'border-gray-900' : '', parseInt(tech.applicable) === 0 ? 'opacity-10' : '']" @click="setActiveTechique(tech.id)">
+              <div v-if="tactic.techniques.includes(tech.id)" class="border p-2 cursor-pointer hover:bg-gray-100 h-8" :class="[tech.color, tech.id === activeTechiqueId ? 'border-gray-900' : '', tech.applicable ? '' : 'opacity-10']" @click="setActiveTechique(tech.id)">
                 <div class="flex justify-between">
                   <div class="">{{ tech.id }}</div>
                   <div class="flex items-center space-x-1">
