@@ -45,12 +45,20 @@ const colors = [
     value: "bg-yellow-500"
   },
   {
-    label: "Light Red",
+    label: "Lightest Red",
     value: "bg-red-200"
   },
   {
-    label: "Heavy Red",
+    label: "Light Red",
+    value: "bg-red-400"
+  },
+  {
+    label: " Red",
     value: "bg-red-500"
+  },
+  {
+    label: "Dark Red",
+    value: "bg-red-700"
   }
 ]
 
