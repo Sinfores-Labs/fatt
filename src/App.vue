@@ -37,12 +37,20 @@ const colors = [
     value: "bg-green-300"
   },
   {
+    label: "Light yellow",
+    value: "bg-yellow-200"
+  },
+  {
+    label: "Heavy yellow",
+    value: "bg-yellow-500"
+  },
+  {
     label: "Light Red",
-    value: "bg-red-100"
+    value: "bg-red-200"
   },
   {
     label: "Heavy Red",
-    value: "bg-red-300"
+    value: "bg-red-500"
   }
 ]
 
@@ -325,6 +333,21 @@ export default {
 
         <!-- Desription -->
         <section class="my-4 space-y-2">
+          <label class="block">
+            <span class="text-gray-700">Кодовое название</span>
+            <input type="text" class="
+                mt-1
+                block
+                w-full
+                rounded-md
+                border-gray-300
+                shadow-sm
+                focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50
+              " placeholder="" v-model="activeTechique.short_name">
+          </label>
+        </section>
+
+        <section class="my-4 space-y-2">
           <header class="text-xs font-bold uppercase text-gray-400">Описание</header>
           <div class="text-sm">{{ activeTechique.name }}</div>
         </section>
@@ -407,7 +430,8 @@ export default {
                 <div v-for="tech in matrix.techniques" :key="tech.id">
                   <div v-if="tactic.techniques.includes(tech.id)" class="border p-2 cursor-pointer hover:bg-gray-100 h-8" :class="[tech.color, tech.id === activeTechiqueId ? 'border-gray-900' : '', tech.applicable ? '' : 'opacity-10']" @click="setActiveTechique(tech.id)">
                     <div class="flex justify-between">
-                      <div class="">{{ tech.id }}</div>
+                      <div v-if="tech.short_name" class="truncate">{{ tech.short_name }}</div>
+                      <div v-else>{{ tech.id }}</div>
                       <div class="flex items-center space-x-1">
                         <div v-if="parseInt(tech.intruder) !== 0">H{{ tech.intruder }}</div>
                         <div v-if="parseInt(tech.protect) !== 0">P{{ tech.protect }}</div>
