@@ -80,6 +80,7 @@ export default {
 
   setup() {
     const isActionsDialogVisible = ref(false)
+    const isSearchDialogVisible = ref(false)
     const matrix = ref()
     const activeTechiqueId = ref(null)
     
@@ -144,6 +145,7 @@ export default {
     
     return {
       isActionsDialogVisible,
+      isSearchDialogVisible,
       matrix,
       activeTechiqueId,
       activeTechique,
@@ -238,13 +240,23 @@ export default {
     </TransitionRoot>
 
     <!-- Actions flyover -->
-    <div v-if="isActionsDialogVisible" class="absolute bottom-10 right-4 h-96 w-96 border bg-white flex flex-col z-10">
+    <div v-if="isActionsDialogVisible" class="absolute bottom-8 right-4 h-96 w-96 border bg-white flex flex-col z-10 shadow-lg rounded-t">
       <div class="h-10 bg-gray-100 flex items-center justify-end px-1">
         <div @click="isActionsDialogVisible = false" class="flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-200 cursor-pointer">
           <XIcon class="w-5 h-5" aria-hidden="true" />
         </div>
       </div>
       <div class="flex-1 overflow-auto">Actions</div>
+    </div>
+
+    <!-- Search flyover -->
+    <div v-if="isSearchDialogVisible" class="absolute bottom-8 right-4 h-96 w-96 border bg-white flex flex-col z-10 shadow-lg rounded-t">
+      <div class="h-10 bg-gray-100 flex items-center justify-end px-1">
+        <div @click="isSearchDialogVisible = false" class="flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-200 cursor-pointer">
+          <XIcon class="w-5 h-5" aria-hidden="true" />
+        </div>
+      </div>
+      <div class="flex-1 overflow-auto">Search results</div>
     </div>
 
     <!-- Technique editor -->
@@ -471,9 +483,10 @@ export default {
           </div>
         </div>
       </div>
-      <div class="h-10 bg-gray-50 border-t flex justify-between items-center text-xs px-4">
-        <div class="font-semibold">Sinfores SXI FATT Navigator</div>
+      <div class="h-10 bg-gray-50 border-t flex justify-between items-center text-xs px-4 z-50 relative">
+        <div class="font-bold">FATT Navigator &middot; <span class="font-normal">Sinfores SXI</span></div>
         <div class="flex items-center space-x-2">
+          <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="isSearchDialogVisible = true">Search</div>
           <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="isActionsDialogVisible = true">Actions</div>
           <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="openModal">Load</div>
           <div class="py-1 px-2 rounded hover:bg-gray-200 cursor-pointer font-semibold" type="button" @click="saveJSON()">Save</div>
